@@ -10,6 +10,8 @@ extern int CosValue512[0x200];
 extern int SinValue256[0x100];
 extern int CosValue256[0x100];
 
+extern byte ArcTanValue256[0x100 * 0x100];
+
 // Setup Angles
 void CalculateTrigAngles();
 
@@ -43,5 +45,8 @@ inline int Cos256(int angle)
     angle &= 0xFF;
     return CosValue256[angle];
 }
+
+// Get Arc Tan value
+byte ArcTanLookup(int X, int Y);
 
 #endif // !MATH_H

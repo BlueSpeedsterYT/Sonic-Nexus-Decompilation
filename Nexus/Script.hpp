@@ -22,7 +22,7 @@ struct ObjectScript {
 
 struct ScriptEngine {
     int operands[10];
-    int tempValue[8];
+    int tempValue[21];
     int arrayPosition[3];
     int checkResult;
 };

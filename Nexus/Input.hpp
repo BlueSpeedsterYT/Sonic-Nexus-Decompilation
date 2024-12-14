@@ -48,7 +48,6 @@ extern InputData GKeyDown;
 
 extern bool anyPress;
 
-#if !RETRO_USE_ORIGINAL_CODE
 extern InputButton inputDevice[INPUT_MAX];
 extern int inputType;
 
@@ -58,9 +57,7 @@ extern float LTRIGGER_DEADZONE;
 extern float RTRIGGER_DEADZONE;
 
 extern int mouseHideTimer;
-#endif
 
-#if !RETRO_USE_ORIGINAL_CODE
 #if RETRO_USING_SDL2
 // Easier this way
 enum ExtraSDLButtons {
@@ -88,7 +85,6 @@ extern SDL_Joystick *controller;
 #endif
 
 void ReadInputDevice();
-#endif
 
 void CheckKeyPress(InputData *input, byte Flags);
 void CheckKeyDown(InputData *input, byte Flags);

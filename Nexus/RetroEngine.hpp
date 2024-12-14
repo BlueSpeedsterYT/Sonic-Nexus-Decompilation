@@ -4,18 +4,7 @@
 // Disables POSIX use c++ name blah blah stuff
 #pragma warning(disable : 4996)
 
-// Setting this to true removes (almost) ALL changes from the original code, the trade off is that a playable game cannot be built, it is advised to
-// be set to true only for preservation purposes
-#ifndef RETRO_USE_ORIGINAL_CODE
-#define RETRO_USE_ORIGINAL_CODE (0)
-#endif
-
 #ifndef RETRO_USE_MOD_LOADER
-#define RETRO_USE_MOD_LOADER (0)
-#endif
-
-#if !RETRO_USE_ORIGINAL_CODE
-#undef RETRO_USE_MOD_LOADER
 #define RETRO_USE_MOD_LOADER (1)
 #endif
 
@@ -103,6 +92,7 @@ enum RetroStates {
     ENGINE_MAINGAME    = 1,
     ENGINE_INITSYSMENU = 2,
     ENGINE_EXITGAME    = 3,
+    ENGINE_SCRIPTERROR = 4,
 };
 
 // General Defines
@@ -195,6 +185,11 @@ public:
 
     char GameWindowText[0x40];
     char GameDescriptionText[0x100];
+#ifdef DECOMP_VERSION
+    const char *GameVersion = DECOMP_VERSION;
+#else
+    const char *GameVersion = "0.0.1a";
+#endif
 
     byte *FrameBuffer = nullptr;
 

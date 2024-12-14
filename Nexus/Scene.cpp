@@ -123,11 +123,7 @@ void ProcessStage(void) {
             }
 
             if (TimeEnabled) {
-#if !RETRO_USE_ORIGINAL_CODE
                 if (++FrameCounter == Engine.refreshRate) {
-#else
-                if (++FrameCounter == 60) {
-#endif
                     FrameCounter = 0;
                     if (++Seconds > 59) {
                         Seconds = 0;
@@ -135,7 +131,7 @@ void ProcessStage(void) {
                             Minutes = 0;
                     }
                 }
-                MilliSeconds = 100 * FrameCounter / (!RETRO_USE_ORIGINAL_CODE ? Engine.refreshRate : 60);
+                MilliSeconds = 100 * FrameCounter / Engine.refreshRate;
             }
 
             // Update
@@ -168,11 +164,7 @@ void ProcessStage(void) {
             if (GKeyPress.C) {
                 GKeyPress.C = false;
                 if (TimeEnabled) {
-#if !RETRO_USE_ORIGINAL_CODE
                     if (++FrameCounter == Engine.refreshRate) {
-#else
-                    if (++FrameCounter == 60) {
-#endif
                         FrameCounter = 0;
                         if (++Seconds > 59) {
                             Seconds = 0;
@@ -180,7 +172,7 @@ void ProcessStage(void) {
                                 Minutes = 0;
                         }
                     }
-                    MilliSeconds = 100 * FrameCounter / (!RETRO_USE_ORIGINAL_CODE ? Engine.refreshRate : 60);
+                    MilliSeconds = 100 * FrameCounter / Engine.refreshRate;
                 }
 
                 // Update
@@ -218,9 +210,7 @@ void LoadStageFiles(void) {
     char strBuffer[0x100];
 
     if (!CheckCurrentStageFolder(StageListPosition)) {
-#if !RETRO_USE_ORIGINAL_CODE
         PrintLog("Loading Scene %s - %s", stageListNames[ActiveStageList], stageList[ActiveStageList][StageListPosition].name);
-#endif
         ReleaseStageSfx();
         LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
         ClearScriptData();
@@ -249,6 +239,8 @@ void LoadStageFiles(void) {
                 CloseFile();
                 ParseScriptFile(strBuffer, scriptID++);
                 SetFileInfo(&infoStore);
+                if (Engine.gameMode == ENGINE_SCRIPTERROR)
+                    return;
             }
             CloseFile();
         }
@@ -271,6 +263,8 @@ void LoadStageFiles(void) {
                 CloseFile();
                 ParseScriptFile(strBuffer, scriptID + i);
                 SetFileInfo(&infoStore);
+                if (Engine.gameMode == ENGINE_SCRIPTERROR)
+                    return;
             }
 
             FileRead(&fileBuffer2, 1);
@@ -296,11 +290,9 @@ void LoadStageFiles(void) {
         Load128x128Mappings();
         LoadStageCollisions();
         LoadStageBackground();
-#if !RETRO_USE_ORIGINAL_CODE
     } else {
         PrintLog("Reloading Scene %s - %s", stageListNames[ActiveStageList], stageList[ActiveStageList][StageListPosition].name);
     }
-#endif
 
     for (int i = 0; i < TRACK_COUNT; ++i) SetMusicTrack((char *)"", i, false);
     for (int i = 0; i < ENTITY_COUNT; ++i) {

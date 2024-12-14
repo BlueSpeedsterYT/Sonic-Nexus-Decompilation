@@ -8,7 +8,6 @@ InputData GKeyDown  = InputData();
 
 bool anyPress = false;
 
-#if !RETRO_USE_ORIGINAL_CODE
 #include <algorithm>
 #include <vector>
 
@@ -342,7 +341,6 @@ void ReadInputDevice() {
     }
 #endif
 }
-#endif
 
 void CheckKeyPress(InputData *input, byte flags) {
     if (flags & 0x1)

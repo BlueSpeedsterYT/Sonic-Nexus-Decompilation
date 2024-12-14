@@ -252,13 +252,11 @@ void RetroEngine::Run() {
     unsigned long long curTicks   = 0;
 
     while (GameRunning) {
-#if !RETRO_USE_ORIGINAL_CODE
         if (!vsync) {
             if (SDL_GetPerformanceCounter() < curTicks + targetFreq)
                 continue;
             curTicks = SDL_GetPerformanceCounter();
         }
-#endif
         GameRunning = processEvents();
 
         for (int s = 0; s < gameSpeed; ++s) {
@@ -280,6 +278,11 @@ void RetroEngine::Run() {
                         break;
                     case ENGINE_EXITGAME: 
                         GameRunning = false; 
+                        break;
+                    case ENGINE_SCRIPTERROR:
+                        LoadGameConfig("Data/Game/GameConfig.bin");
+                        InitErrorMessage();
+                        ResetCurrentStageFolder();
                         break;
                     default: break;
                 }
@@ -308,6 +311,7 @@ bool RetroEngine::LoadGameConfig(const char *filePath) {
     char data[0x40];
     char strBuf[0x80];
     byte strLen = 0;
+    StrCopy(GameWindowText, "Retro-Sonic Engine V2"); // this is the default window name
 
     if (LoadFile(filePath, &info)) {
         FileRead(&fileBuffer, 1);

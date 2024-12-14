@@ -25,6 +25,7 @@ struct GFXSurface {
 
 extern int SCREEN_XSIZE;
 extern int SCREEN_CENTERX;
+extern int SCREEN_XSIZE_CONFIG;
 
 extern byte BlendLookupTable[0x100 * 0x100];
 
@@ -48,9 +49,7 @@ void ClearScreen(byte index);
 inline void ClearGraphicsData() {
     for (int i = 0; i < SURFACE_MAX; ++i) StrCopy(GfxSurface[i].fileName, "");
     GfxDataPosition = 0;
-#if !RETRO_USE_ORIGINAL_CODE
     MEM_ZERO(GfxSurface);
-#endif
 }
 
 void SetScreenSize(int width, int lineSize);

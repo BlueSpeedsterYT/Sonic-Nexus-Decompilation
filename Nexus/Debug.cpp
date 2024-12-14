@@ -32,10 +32,21 @@ void InitSystemMenu() {
         SetupTextMenu(&GameMenu[0], 0);
         AddTextMenuEntry(&GameMenu[0], "RETRO SONIC DEFAULT MENU");
         AddTextMenuEntry(&GameMenu[0], " ");
+        char Version[0x80];
+        StrCopy(Version, Engine.GameWindowText);
+        StrAdd(Version, " Version");
+        AddTextMenuEntry(&GameMenu[0], Version);
+        AddTextMenuEntry(&GameMenu[0], Engine.GameVersion);
+#ifdef RETRO_DEV_EXTRA
+        AddTextMenuEntry(&GameMenu[0], RETRO_DEV_EXTRA);
+#else
+        AddTextMenuEntry(&GameMenu[0], " ");
+#endif
         AddTextMenuEntry(&GameMenu[0], " ");
         AddTextMenuEntry(&GameMenu[0], " ");
         AddTextMenuEntry(&GameMenu[0], " ");
         AddTextMenuEntry(&GameMenu[0], " ");
+        AddTextMenuEntry(&GameMenu[0], "START GAME");
         AddTextMenuEntry(&GameMenu[0], " ");
         AddTextMenuEntry(&GameMenu[0], "1 PLAYER");
         AddTextMenuEntry(&GameMenu[0], " ");
@@ -47,8 +58,26 @@ void InitSystemMenu() {
         GameMenu[0].alignment      = MENU_ALIGN_CENTER;
         GameMenu[0].selectionCount = 2;
         GameMenu[0].selection1     = 0;
-        GameMenu[0].selection2     = 7;
+        GameMenu[0].selection2     = 9;
     }
+}
+void InitErrorMessage()
+{
+    XScrollOffset = 0;
+    YScrollOffset = 0;
+    StopMusic();
+    StopAllSfx();
+    ReleaseStageSfx();
+    PaletteMode = 0;
+    Engine.GameMode = ENGINE_DEVMENU;
+    ClearGraphicsData();
+    LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
+    TextMenuSurfaceNo = 0;
+    LoadGIFFile("Data/Game/SystemText.gif", 0);
+    StageMode = DEVMENU_SCRIPTERROR;
+    GameMenu[0].alignment        = MENU_ALIGN_CENTER;
+    GameMenu[0].selectionCount   = 1;
+    GameMenu[0].selection1       = 0;
 }
 void ProcessSystemMenu() {
     ClearScreen(0xF0);
@@ -68,14 +97,23 @@ void ProcessSystemMenu() {
             if (GKeyPress.up)
                 GameMenu[0].selection2 -= 2;
 
-            if (GameMenu[0].selection2 > (RETRO_USE_MOD_LOADER ? 11 : 9))
-                GameMenu[0].selection2 = 7;
-            if (GameMenu[0].selection2 < 7)
-                GameMenu[0].selection2 = (RETRO_USE_MOD_LOADER ? 11 : 9);
+            if (GameMenu[0].selection2 > (RETRO_USE_MOD_LOADER ? 15 : 13))
+                GameMenu[0].selection2 = 9;
+            if (GameMenu[0].selection2 < 9)
+                GameMenu[0].selection2 = (RETRO_USE_MOD_LOADER ? 15 : 13);
 
             DrawTextMenu(&GameMenu[0], SCREEN_CENTERX, 72);
             if (GKeyPress.start || GKeyPress.A) {
-                if (GameMenu[0].selection2 == 7) {
+                if (GameMenu[0].selection2 == 9) {
+                    ClearGraphicsData();
+                    ClearAnimationData();
+                    LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
+                    ActiveStageList   = 0;
+                    StageMode         = STAGEMODE_LOAD;
+                    Engine.GameMode   = ENGINE_MAINGAME;
+                    StageListPosition = 0;
+                }
+                else if (GameMenu[0].selection2 == 11) {
                     SetupTextMenu(&GameMenu[0], 0);
                     AddTextMenuEntry(&GameMenu[0], "CHOOSE A PLAYER");
                     SetupTextMenu(&GameMenu[1], 0);
@@ -86,7 +124,7 @@ void ProcessSystemMenu() {
                     StageMode                  = DEVMENU_PLAYERSEL;
                 }
 #if RETRO_USE_MOD_LOADER
-                else if (GameMenu[0].selection2 == 9) {
+                else if (GameMenu[0].selection2 == 13) {
                     SetupTextMenu(&GameMenu[0], 0);
                     AddTextMenuEntry(&GameMenu[0], "MOD LIST");
                     SetupTextMenu(&GameMenu[1], 0);
@@ -162,10 +200,21 @@ void ProcessSystemMenu() {
                 SetupTextMenu(&GameMenu[0], 0);
                 AddTextMenuEntry(&GameMenu[0], "RETRO SONIC DEFAULT MENU");
                 AddTextMenuEntry(&GameMenu[0], " ");
+                char Version[0x80];
+                StrCopy(Version, Engine.GameWindowText);
+                StrAdd(Version, " Version");
+                AddTextMenuEntry(&GameMenu[0], Version);
+                AddTextMenuEntry(&GameMenu[0], Engine.GameVersion);
+#ifdef RETRO_DEV_EXTRA
+                AddTextMenuEntry(&GameMenu[0], RETRO_DEV_EXTRA);
+#else
+                AddTextMenuEntry(&GameMenu[0], " ");
+#endif
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], "START GAME");
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], "1 PLAYER");
                 AddTextMenuEntry(&GameMenu[0], " ");
@@ -178,7 +227,7 @@ void ProcessSystemMenu() {
                 GameMenu[0].alignment      = MENU_ALIGN_CENTER;
                 GameMenu[0].selectionCount = 2;
                 GameMenu[0].selection1     = 0;
-                GameMenu[0].selection2     = 7;
+                GameMenu[0].selection2     = 9;
             }
             break;
         }
@@ -286,6 +335,59 @@ void ProcessSystemMenu() {
             }
             break;
         }
+        case DEVMENU_SCRIPTERROR: // Script Error
+        {
+            DrawTextMenu(&GameMenu[0], SCREEN_CENTERX, 72);
+            if (GKeyPress.start || GKeyPress.A) {
+                StageMode = DEVMENU_MAIN;
+                SetupTextMenu(&GameMenu[0], 0);
+                AddTextMenuEntry(&GameMenu[0], "RETRO SONIC DEFAULT MENU");
+                AddTextMenuEntry(&GameMenu[0], " ");
+                char Version[0x80];
+                StrCopy(Version, Engine.GameWindowText);
+                StrAdd(Version, " Version");
+                AddTextMenuEntry(&GameMenu[0], Version);
+                AddTextMenuEntry(&GameMenu[0], Engine.GameVersion);
+#ifdef RETRO_DEV_EXTRA
+                AddTextMenuEntry(&GameMenu[0], RETRO_DEV_EXTRA);
+#else
+                AddTextMenuEntry(&GameMenu[0], " ");
+#endif
+                AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], "START GAME");
+                AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], "1 PLAYER");
+                AddTextMenuEntry(&GameMenu[0], " ");
+#if RETRO_USE_MOD_LOADER
+                AddTextMenuEntry(&GameMenu[0], "MODS");
+                AddTextMenuEntry(&GameMenu[0], " ");
+#endif
+                AddTextMenuEntry(&GameMenu[0], "QUIT");
+                GameMenu[0].alignment        = MENU_ALIGN_CENTER;
+                GameMenu[0].selectionCount   = 2;
+                GameMenu[0].selection1       = 0;
+                GameMenu[0].selection2       = 9;
+            }
+            else if (GKeyPress.B) {
+                ClearGraphicsData();
+                ClearAnimationData();
+                LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
+                ActiveStageList   = 0;
+                StageMode         = STAGEMODE_LOAD;
+                Engine.GameMode   = ENGINE_MAINGAME;
+                StageListPosition = 0;
+            }
+            else if (GKeyPress.C) {
+                ClearGraphicsData();
+                ClearAnimationData();
+                StageMode         = STAGEMODE_LOAD;
+                Engine.GameMode   = ENGINE_MAINGAME;
+            }
+            break;
+        }
 #if RETRO_USE_MOD_LOADER
         case DEVMENU_MODMENU: // Mod Menu
         {
@@ -335,20 +437,33 @@ void ProcessSystemMenu() {
                 SetupTextMenu(&GameMenu[0], 0);
                 AddTextMenuEntry(&GameMenu[0], "RETRO SONIC DEFAULT MENU");
                 AddTextMenuEntry(&GameMenu[0], " ");
+                char Version[0x80];
+                StrCopy(Version, Engine.GameWindowText);
+                StrAdd(Version, " Version");
+                AddTextMenuEntry(&GameMenu[0], Version);
+                AddTextMenuEntry(&GameMenu[0], Engine.GameVersion);
+#ifdef RETRO_DEV_EXTRA
+                AddTextMenuEntry(&GameMenu[0], RETRO_DEV_EXTRA);
+#else
+                AddTextMenuEntry(&GameMenu[0], " ");
+#endif
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], " ");
+                AddTextMenuEntry(&GameMenu[0], "START GAME");
                 AddTextMenuEntry(&GameMenu[0], " ");
                 AddTextMenuEntry(&GameMenu[0], "1 PLAYER");
                 AddTextMenuEntry(&GameMenu[0], " ");
+#if RETRO_USE_MOD_LOADER
                 AddTextMenuEntry(&GameMenu[0], "MODS");
                 AddTextMenuEntry(&GameMenu[0], " ");
+#endif
                 AddTextMenuEntry(&GameMenu[0], "QUIT");
                 GameMenu[0].alignment      = MENU_ALIGN_CENTER;
                 GameMenu[0].selectionCount = 2;
                 GameMenu[0].selection1     = 0;
-                GameMenu[0].selection2     = 7;
+                GameMenu[0].selection2     = 9;
 
                 RefreshEngine();
             }

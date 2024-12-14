@@ -19,11 +19,7 @@ int JumpTableDataPos = 0;
 int JumpTableOffset  = 0;
 
 #define ALIAS_COUNT (0x80)
-#if !RETRO_USE_ORIGINAL_CODE
 #define COMMONALIAS_COUNT (22)
-#else
-#define COMMONALIAS_COUNT (14)
-#endif
 int NO_ALIASES = 0;
 int lineID     = 0;
 
@@ -78,6 +74,19 @@ const char variableNames[][0x20] = {
     "Object.Value5",
     "Object.Value6",
     "Object.Value7",
+    "Object.Value8",
+    "Object.Value9",
+    "Object.Value10",
+    "Object.Value11",
+    "Object.Value12",
+    "Object.Value13",
+    "Object.Value14",
+    "Object.Value15",
+    "Object.Value16",
+    "Object.Value17",
+    "Object.Value18",
+    "Object.Value19",
+    "Object.Value20",
     "TempValue0",
     "TempValue1",
     "TempValue2",
@@ -86,6 +95,19 @@ const char variableNames[][0x20] = {
     "TempValue5",
     "TempValue6",
     "TempValue7",
+    "TempValue8",
+    "TempValue9",
+    "TempValue10",
+    "TempValue11",
+    "TempValue12",
+    "TempValue13",
+    "TempValue14",
+    "TempValue15",
+    "TempValue16",
+    "TempValue17",
+    "TempValue18",
+    "TempValue19",
+    "TempValue20",
     "CheckResult",
     "ArrayPos0",
     "ArrayPos1",
@@ -186,6 +208,10 @@ const char variableNames[][0x20] = {
     "Stage.XBoundary2",
     "Stage.YBoundary1",
     "Stage.YBoundary2",
+    "Screen.CenterX",
+    "Screen.CenterY",
+    "Screen.SizeX",
+    "Screen.SizeY",
     "Object.OutOfBounds",
 };
 
@@ -290,11 +316,9 @@ AliasInfo aliases[0x80] = {
     AliasInfo("REGULAR_STAGE", "1"), AliasInfo("BONUS_STAGE", "2"), AliasInfo("SPECIAL_STAGE", "3"),
     AliasInfo("MENU_1", "0"),        AliasInfo("MENU_2", "1"),      AliasInfo("C_TOUCH", "0"),
     AliasInfo("C_BOX", "1"),         AliasInfo("C_PLATFORM", "2"),
-#if !RETRO_USE_ORIGINAL_CODE
     AliasInfo("INK_NONE", "0"),      AliasInfo("INK_BLEND", "1"),   AliasInfo("INK_TINT", "2"),
     AliasInfo("FX_TINT", "3"),       AliasInfo("FLIP_NONE", "0"),   AliasInfo("FLIP_X", "1"),
     AliasInfo("FLIP_Y", "2"),        AliasInfo("FLIP_XY", "3"),
-#endif
 };
 
 const char scriptEvaluationTokens[][0x4] = {
@@ -336,6 +360,19 @@ enum ScrVariable {
     VAR_OBJECTVALUE5,
     VAR_OBJECTVALUE6,
     VAR_OBJECTVALUE7,
+    VAR_OBJECTVALUE8,
+    VAR_OBJECTVALUE9,
+    VAR_OBJECTVALUE10,
+    VAR_OBJECTVALUE11,
+    VAR_OBJECTVALUE12,
+    VAR_OBJECTVALUE13,
+    VAR_OBJECTVALUE14,
+    VAR_OBJECTVALUE15,
+    VAR_OBJECTVALUE16,
+    VAR_OBJECTVALUE17,
+    VAR_OBJECTVALUE18,
+    VAR_OBJECTVALUE19,
+    VAR_OBJECTVALUE20,
     VAR_TEMPVALUE0,
     VAR_TEMPVALUE1,
     VAR_TEMPVALUE2,
@@ -344,6 +381,19 @@ enum ScrVariable {
     VAR_TEMPVALUE5,
     VAR_TEMPVALUE6,
     VAR_TEMPVALUE7,
+    VAR_TEMPVALUE8,
+    VAR_TEMPVALUE9,
+    VAR_TEMPVALUE10,
+    VAR_TEMPVALUE11,
+    VAR_TEMPVALUE12,
+    VAR_TEMPVALUE13,
+    VAR_TEMPVALUE14,
+    VAR_TEMPVALUE15,
+    VAR_TEMPVALUE16,
+    VAR_TEMPVALUE17,
+    VAR_TEMPVALUE18,
+    VAR_TEMPVALUE19,
+    VAR_TEMPVALUE20,
     VAR_CHECKRESULT,
     VAR_ARRAYPOS0,
     VAR_ARRAYPOS1,
@@ -444,6 +494,10 @@ enum ScrVariable {
     VAR_STAGEXBOUNDARY2,
     VAR_STAGEYBOUNDARY1,
     VAR_STAGEYBOUNDARY2,
+    VAR_SCREENCENTERX,
+    VAR_SCREENCENTERY,
+    VAR_SCREENSIZEX,
+    VAR_SCREENSIZEY,
     VAR_OBJECTOUTOFBOUNDS,
     VAR_MAX_CNT,
 };
@@ -549,6 +603,16 @@ enum ScrFunction {
 void CheckAliasText(char *text) {
     if (FindStringToken(text, "#alias", 1))
         return;
+
+    if (NO_ALIASES >= ALIAS_COUNT) {
+        SetupTextMenu(&GameMenu[0], 0);
+        AddTextMenuEntry(&GameMenu[0], "SCRIPT PARSING FAILED");
+        AddTextMenuEntry(&GameMenu[0], " ");
+        AddTextMenuEntry(&GameMenu[0], "TOO MANY ALIASES");
+        Engine.GameMode = ENGINE_SCRIPTERROR;
+        return;
+    }
+
     int textPos     = 6;
     int aliasStrPos = 0;
     int aliasMatch  = 0;
@@ -706,7 +770,18 @@ void ConvertFunctionText(char *text) {
         }
     }
     if (opcode <= 0) {
-        // error lol
+        SetupTextMenu(&GameMenu[0], 0);
+        AddTextMenuEntry(&GameMenu[0], "SCRIPT PARSING FAILED");
+        AddTextMenuEntry(&GameMenu[0], " ");
+        AddTextMenuEntry(&GameMenu[0], "OPCODE NOT FOUND");
+        AddTextMenuEntry(&GameMenu[0], funcName);
+        AddTextMenuEntry(&GameMenu[0], " ");
+        AddTextMenuEntry(&GameMenu[0], "LINE NUMBER");
+        char buffer[0x10];
+        buffer[0] = 0;
+        AppendIntegerToString(buffer, lineID);
+        AddTextMenuEntry(&GameMenu[0], buffer);
+        Engine.GameMode = ENGINE_SCRIPTERROR;
     } else {
         ScriptData[ScriptDataPos++] = opcode;
         if (StrComp("else", functions[opcode].name))
@@ -778,6 +853,52 @@ void ConvertFunctionText(char *text) {
                     AppendIntegerToString(strBuffer, v);
                 }
             }
+#if RETRO_USE_MOD_LOADER
+            // Eg: TempValue0 = TypeName[PlayerObject]
+            if (StrComp(funcName, "TypeName")) {
+                funcName[0]  = '0';
+                funcName[1] = 0;
+
+                for (int o = 0; o < OBJECT_COUNT; ++o) {
+                    if (StrComp(arrayStr, typeNames[o])) {
+                        funcName[0] = 0;
+                        AppendIntegerToString(funcName, o);
+                    }
+                }
+            }
+
+            // Eg: TempValue0 = SfxName[Jump]
+            if (StrComp(funcName, "SfxName")) {
+                funcName[0] = '0';
+                funcName[1] = 0;
+
+                int s = 0;
+                for (; s < NoGlobalSFX; ++s) {
+                    if (StrComp(arrayStr, NameGlobalSFX[s])) {
+                        funcName[0] = 0;
+                        AppendIntegerToString(funcName, s);
+                        break;
+                    }
+                }
+
+                if (s == NoGlobalSFX) {
+                    s = 0;
+                    for (; s < NoStageSFX; ++s) {
+                        if (StrComp(arrayStr, NameStageSFX[s])) {
+                            funcName[0] = 0;
+                            AppendIntegerToString(funcName, s);
+                            break;
+                        }
+                    }
+
+                    if (s == NoStageSFX) {
+                        char buf[0x40];
+                        sprintf(buf, "WARNING: Unknown SfxName \"%s\"", arrayStr);
+                        PrintLog(buf);
+                    }
+                }
+            }
+#endif
             if (ConvertStringToInteger(funcName, &value)) {
                 ScriptData[ScriptDataPos++] = SCRIPTVAR_INTCONST;
                 ScriptData[ScriptDataPos++] = value;
@@ -848,10 +969,21 @@ void ConvertFunctionText(char *text) {
                         value = i;
                 }
 
-                if (value == -1) {
-                    // error
+                if (value == -1 && Engine.GameMode != ENGINE_SCRIPTERROR) {
+                    SetupTextMenu(&GameMenu[0], 0);
+                    AddTextMenuEntry(&GameMenu[0], "SCRIPT PARSING FAILED");
+                    AddTextMenuEntry(&GameMenu[0], " ");
+                    AddTextMenuEntry(&GameMenu[0], "OPERAND NOT FOUND");
+                    AddTextMenuEntry(&GameMenu[0], funcName);
+                    AddTextMenuEntry(&GameMenu[0], " ");
+                    AddTextMenuEntry(&GameMenu[0], "LINE NUMBER");
+                    funcName[0] = 0;
+                    AppendIntegerToString(funcName, lineID);
+                    AddTextMenuEntry(&GameMenu[0], funcName);
+                    Engine.GameMode = ENGINE_SCRIPTERROR;
                     value = 0;
                 }
+
                 ScriptData[ScriptDataPos++] = value;
             }
         }
@@ -1244,6 +1376,14 @@ void ParseScriptFile(char *scriptName, int scriptID) {
                             ConvertArithmaticSyntax(ScriptText);
                             if (!ReadSwitchCase(ScriptText)) {
                                 ConvertFunctionText(ScriptText);
+
+                                if (Engine.GameMode == ENGINE_SCRIPTERROR) {
+                                    AddTextMenuEntry(&GameMenu[0], " ");
+                                    AddTextMenuEntry(&GameMenu[0], "ERROR IN");
+                                    AddTextMenuEntry(&GameMenu[0], scriptName);
+                                    parseMode = PARSEMODE_ERROR;
+                                }
+
                                 if (!ScriptText[0]) {
                                     parseMode = PARSEMODE_SCOPELESS;
                                     switch (currentSub) {
@@ -1459,6 +1599,58 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                         ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[7];
                         break;
                     }
+                    case VAR_OBJECTVALUE8: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[8];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE9: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[9];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE10: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[10];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE11: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[11];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE12: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[12];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE13: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[13];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE14: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[14];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE15: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[15];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE16: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[16];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE17: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[17];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE18: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[18];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE19: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[19];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE20: {
+                        ScriptEng.operands[i] = ObjectEntityList[arrayVal].values[20];
+                        break;
+                    }
                     case VAR_TEMPVALUE0: ScriptEng.operands[i] = ScriptEng.tempValue[0]; break;
                     case VAR_TEMPVALUE1: ScriptEng.operands[i] = ScriptEng.tempValue[1]; break;
                     case VAR_TEMPVALUE2: ScriptEng.operands[i] = ScriptEng.tempValue[2]; break;
@@ -1467,6 +1659,19 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                     case VAR_TEMPVALUE5: ScriptEng.operands[i] = ScriptEng.tempValue[5]; break;
                     case VAR_TEMPVALUE6: ScriptEng.operands[i] = ScriptEng.tempValue[6]; break;
                     case VAR_TEMPVALUE7: ScriptEng.operands[i] = ScriptEng.tempValue[7]; break;
+                    case VAR_TEMPVALUE8: ScriptEng.operands[i] = ScriptEng.tempValue[8]; break;
+                    case VAR_TEMPVALUE9: ScriptEng.operands[i] = ScriptEng.tempValue[9]; break;
+                    case VAR_TEMPVALUE10: ScriptEng.operands[i] = ScriptEng.tempValue[10]; break;
+                    case VAR_TEMPVALUE11: ScriptEng.operands[i] = ScriptEng.tempValue[11]; break;
+                    case VAR_TEMPVALUE12: ScriptEng.operands[i] = ScriptEng.tempValue[12]; break;
+                    case VAR_TEMPVALUE13: ScriptEng.operands[i] = ScriptEng.tempValue[13]; break;
+                    case VAR_TEMPVALUE14: ScriptEng.operands[i] = ScriptEng.tempValue[14]; break;
+                    case VAR_TEMPVALUE15: ScriptEng.operands[i] = ScriptEng.tempValue[15]; break;
+                    case VAR_TEMPVALUE16: ScriptEng.operands[i] = ScriptEng.tempValue[16]; break;
+                    case VAR_TEMPVALUE17: ScriptEng.operands[i] = ScriptEng.tempValue[17]; break;
+                    case VAR_TEMPVALUE18: ScriptEng.operands[i] = ScriptEng.tempValue[18]; break;
+                    case VAR_TEMPVALUE19: ScriptEng.operands[i] = ScriptEng.tempValue[19]; break;
+                    case VAR_TEMPVALUE20: ScriptEng.operands[i] = ScriptEng.tempValue[20]; break;
                     case VAR_CHECKRESULT: ScriptEng.operands[i] = ScriptEng.checkResult; break;
                     case VAR_ARRAYPOS0: ScriptEng.operands[i] = ScriptEng.arrayPosition[0]; break;
                     case VAR_ARRAYPOS1: ScriptEng.operands[i] = ScriptEng.arrayPosition[1]; break;
@@ -1729,6 +1934,10 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                     case VAR_STAGEXBOUNDARY2: ScriptEng.operands[i] = XBoundary2; break;
                     case VAR_STAGEYBOUNDARY1: ScriptEng.operands[i] = YBoundary1; break;
                     case VAR_STAGEYBOUNDARY2: ScriptEng.operands[i] = YBoundary2; break;
+                    case VAR_SCREENCENTERX: scriptEng.operands[i] = SCREEN_CENTERX; break;
+                    case VAR_SCREENCENTERY: scriptEng.operands[i] = SCREEN_CENTERY; break;
+                    case VAR_SCREENSIZEX: scriptEng.operands[i] = SCREEN_XSIZE; break;
+                    case VAR_SCREENSIZEY: scriptEng.operands[i] = SCREEN_YSIZE; break;
                     case VAR_OBJECTOUTOFBOUNDS: {
                         int pos = ObjectEntityList[arrayVal].XPos >> 16;
                         if (pos <= XScrollOffset - OBJECT_BORDER_X1 || pos >= OBJECT_BORDER_X2 + XScrollOffset) {
@@ -1944,8 +2153,7 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                 break;
             }
             case FUNC_ATAN2: {
-                opcodeSize = 0;
-                // doesn't exist
+                ScriptEng.operands[0] = ArcTanLookup(ScriptEng.operands[1], ScriptEng.operands[2]);
                 break;
             }
             case FUNC_INTERPOLATE:
@@ -2404,7 +2612,10 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                 break;
             case FUNC_SETMUSICTRACK:
                 opcodeSize = 0;
-                SetMusicTrack(ScriptText, ScriptEng.operands[1], ScriptEng.operands[2]);
+                if (ScriptEng.operands[2] <= 1)
+                    SetMusicTrack(scriptText, ScriptEng.operands[1], ScriptEng.operands[2], 0);
+                else
+                    SetMusicTrack(scriptText, ScriptEng.operands[1], true, ScriptEng.operands[2]);
                 break;
             case FUNC_PLAYMUSIC:
                 opcodeSize = 0;
@@ -2577,6 +2788,58 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                         ObjectEntityList[arrayVal].values[7] = ScriptEng.operands[i];
                         break;
                     }
+                    case VAR_OBJECTVALUE8: {
+                        ObjectEntityList[arrayVal].values[8] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE9: {
+                        ObjectEntityList[arrayVal].values[9] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE10: {
+                        ObjectEntityList[arrayVal].values[10] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE11: {
+                        ObjectEntityList[arrayVal].values[11] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE12: {
+                        ObjectEntityList[arrayVal].values[12] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE13: {
+                        ObjectEntityList[arrayVal].values[13] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE14: {
+                        ObjectEntityList[arrayVal].values[14] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE15: {
+                        ObjectEntityList[arrayVal].values[15] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE16: {
+                        ObjectEntityList[arrayVal].values[16] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE17: {
+                        ObjectEntityList[arrayVal].values[17] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE18: {
+                        ObjectEntityList[arrayVal].values[18] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE19: {
+                        ObjectEntityList[arrayVal].values[19] = ScriptEng.operands[i];
+                        break;
+                    }
+                    case VAR_OBJECTVALUE20: {
+                        ObjectEntityList[arrayVal].values[20] = ScriptEng.operands[i];
+                        break;
+                    }
                     case VAR_TEMPVALUE0: ScriptEng.tempValue[0] = ScriptEng.operands[i]; break;
                     case VAR_TEMPVALUE1: ScriptEng.tempValue[1] = ScriptEng.operands[i]; break;
                     case VAR_TEMPVALUE2: ScriptEng.tempValue[2] = ScriptEng.operands[i]; break;
@@ -2585,6 +2848,19 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                     case VAR_TEMPVALUE5: ScriptEng.tempValue[5] = ScriptEng.operands[i]; break;
                     case VAR_TEMPVALUE6: ScriptEng.tempValue[6] = ScriptEng.operands[i]; break;
                     case VAR_TEMPVALUE7: ScriptEng.tempValue[7] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE8: ScriptEng.tempValue[8] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE9: ScriptEng.tempValue[9] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE10: ScriptEng.tempValue[10] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE11: ScriptEng.tempValue[11] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE12: ScriptEng.tempValue[12] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE13: ScriptEng.tempValue[13] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE14: ScriptEng.tempValue[14] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE15: ScriptEng.tempValue[15] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE16: ScriptEng.tempValue[16] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE17: ScriptEng.tempValue[17] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE18: ScriptEng.tempValue[18] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE19: ScriptEng.tempValue[19] = ScriptEng.operands[i]; break;
+                    case VAR_TEMPVALUE20: ScriptEng.tempValue[20] = ScriptEng.operands[i]; break;
                     case VAR_CHECKRESULT: ScriptEng.checkResult = ScriptEng.operands[i]; break;
                     case VAR_ARRAYPOS0: ScriptEng.arrayPosition[0] = ScriptEng.operands[i]; break;
                     case VAR_ARRAYPOS1: ScriptEng.arrayPosition[1] = ScriptEng.operands[i]; break;
@@ -2857,6 +3133,10 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                             NewYBoundary2 = ScriptEng.operands[i];
                         }
                         break;
+                    case VAR_SCREENCENTERX: break;
+                    case VAR_SCREENCENTERY: break;
+                    case VAR_SCREENXSIZE: break;
+                    case VAR_SCREENYSIZE: break;
                     case VAR_OBJECTOUTOFBOUNDS: break;
                 }
             } else if (opcodeType == SCRIPTVAR_INTCONST) { // int constant

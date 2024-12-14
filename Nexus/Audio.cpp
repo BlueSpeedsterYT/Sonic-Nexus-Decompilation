@@ -142,10 +142,6 @@ void LoadGlobalSfx()
             GetFileInfo(&infoStore);
             LoadSfx(strBuffer, s);
             SetFileInfo(&infoStore);
-			
-#if RETRO_USE_MOD_LOADER
-            SetSfxName(strBuffer, s, true);
-#endif
         }
 
         CloseFile();
@@ -404,30 +400,6 @@ void ProcessAudioMixing(Sint32 *dst, const Sint16 *src, int len, int volume, sby
 
         i++;
     }
-}
-#endif
-
-#if RETRO_USE_MOD_LOADER
-char NameGlobalSFX[SFX_COUNT][0x40];
-char NameStageSFX[SFX_COUNT][0x40];
-void SetSfxName(const char *sfxName, int sfxID, bool global)
-{
-    char *sfxNamePtr = global ? NameGlobalSFX[sfxID] : NameStageSFX[sfxID];
-
-    int sfxNamePos = 0;
-    int sfxPtrPos  = 0;
-    byte mode      = 0;
-    while (sfxName[sfxNamePos]) {
-        if (sfxName[sfxNamePos] == '.' && mode == 1)
-            mode = 2;
-        else if ((sfxName[sfxNamePos] == '/' || sfxName[sfxNamePos] == '\\') && !mode)
-            mode = 1;
-        else if (sfxName[sfxNamePos] != ' ' && mode == 1)
-            sfxNamePtr[sfxPtrPos++] = sfxName[sfxNamePos];
-        ++sfxNamePos;
-    }
-    sfxNamePtr[sfxPtrPos] = 0;
-    PrintLog("Set %s SFX (%d) name to: %s", (global ? "Global" : "Stage"), sfxID, sfxNamePtr);
 }
 #endif
 

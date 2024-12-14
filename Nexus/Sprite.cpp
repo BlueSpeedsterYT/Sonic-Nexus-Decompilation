@@ -198,7 +198,7 @@ void ReadGifPictureData(int width, int height, bool interlaced, byte *gfxData, i
 }
 
 int AddGraphicsFile(const char *filePath) {
-    char sheetPath[!RETRO_USE_ORIGINAL_CODE ? 0x100 : 0x40];
+    char sheetPath[0x100];
 
     StrCopy(sheetPath, "Data/Sprites/");
     StrAdd(sheetPath, filePath);

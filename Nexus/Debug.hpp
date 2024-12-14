@@ -35,10 +35,14 @@ enum DevMenuMenus {
     DEVMENU_PLAYERSEL,
     DEVMENU_STAGELISTSEL,
     DEVMENU_STAGESEL,
+    DEVMENU_SCRIPTERROR,
+#if RETRO_USE_MOD_LOADER
     DEVMENU_MODMENU,
+#endif
 };
 
 void InitSystemMenu();
+void InitErrorMessage();
 void ProcessSystemMenu();
 
 #endif //!DEBUG_H

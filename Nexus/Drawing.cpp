@@ -3,6 +3,7 @@
 
 int SCREEN_XSIZE   = 320;
 int SCREEN_CENTERX = (SCREEN_XSIZE / 2);
+int SCREEN_XSIZE_CONFIG = 320;
 
 byte BlendLookupTable[0x100 * 0x100];
 

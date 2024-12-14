@@ -188,7 +188,7 @@ public:
 #ifdef DECOMP_VERSION
     const char *GameVersion = DECOMP_VERSION;
 #else
-    const char *GameVersion = "0.0.1a";
+    const char *GameVersion = "0.0.1A";
 #endif
 
     byte *FrameBuffer = nullptr;

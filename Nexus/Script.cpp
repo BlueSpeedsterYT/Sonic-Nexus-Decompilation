@@ -853,52 +853,18 @@ void ConvertFunctionText(char *text) {
                     AppendIntegerToString(strBuffer, v);
                 }
             }
-#if RETRO_USE_MOD_LOADER
             // Eg: TempValue0 = TypeName[PlayerObject]
             if (StrComp(funcName, "TypeName")) {
                 funcName[0]  = '0';
                 funcName[1] = 0;
 
                 for (int o = 0; o < OBJECT_COUNT; ++o) {
-                    if (StrComp(arrayStr, typeNames[o])) {
+                    if (StrComp(strBuffer, typeNames[o])) {
                         funcName[0] = 0;
                         AppendIntegerToString(funcName, o);
                     }
                 }
             }
-
-            // Eg: TempValue0 = SfxName[Jump]
-            if (StrComp(funcName, "SfxName")) {
-                funcName[0] = '0';
-                funcName[1] = 0;
-
-                int s = 0;
-                for (; s < NoGlobalSFX; ++s) {
-                    if (StrComp(arrayStr, NameGlobalSFX[s])) {
-                        funcName[0] = 0;
-                        AppendIntegerToString(funcName, s);
-                        break;
-                    }
-                }
-
-                if (s == NoGlobalSFX) {
-                    s = 0;
-                    for (; s < NoStageSFX; ++s) {
-                        if (StrComp(arrayStr, NameStageSFX[s])) {
-                            funcName[0] = 0;
-                            AppendIntegerToString(funcName, s);
-                            break;
-                        }
-                    }
-
-                    if (s == NoStageSFX) {
-                        char buf[0x40];
-                        sprintf(buf, "WARNING: Unknown SfxName \"%s\"", arrayStr);
-                        PrintLog(buf);
-                    }
-                }
-            }
-#endif
             if (ConvertStringToInteger(funcName, &value)) {
                 ScriptData[ScriptDataPos++] = SCRIPTVAR_INTCONST;
                 ScriptData[ScriptDataPos++] = value;
@@ -1467,6 +1433,7 @@ void ClearScriptData() {
         scriptInfo->subStartup.jumpTablePtr            = JUMPTABLE_COUNT - 1;
         scriptInfo->frameStartPtr                      = ScriptFrames;
         scriptInfo->spriteSheetID                      = 0;
+        typeNames[o][0]                                = 0;
     }
 }
 
@@ -1934,10 +1901,10 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                     case VAR_STAGEXBOUNDARY2: ScriptEng.operands[i] = XBoundary2; break;
                     case VAR_STAGEYBOUNDARY1: ScriptEng.operands[i] = YBoundary1; break;
                     case VAR_STAGEYBOUNDARY2: ScriptEng.operands[i] = YBoundary2; break;
-                    case VAR_SCREENCENTERX: scriptEng.operands[i] = SCREEN_CENTERX; break;
-                    case VAR_SCREENCENTERY: scriptEng.operands[i] = SCREEN_CENTERY; break;
-                    case VAR_SCREENSIZEX: scriptEng.operands[i] = SCREEN_XSIZE; break;
-                    case VAR_SCREENSIZEY: scriptEng.operands[i] = SCREEN_YSIZE; break;
+                    case VAR_SCREENCENTERX: ScriptEng.operands[i] = SCREEN_CENTERX; break;
+                    case VAR_SCREENCENTERY: ScriptEng.operands[i] = SCREEN_CENTERY; break;
+                    case VAR_SCREENSIZEX: ScriptEng.operands[i] = SCREEN_XSIZE; break;
+                    case VAR_SCREENSIZEY: ScriptEng.operands[i] = SCREEN_YSIZE; break;
                     case VAR_OBJECTOUTOFBOUNDS: {
                         int pos = ObjectEntityList[arrayVal].XPos >> 16;
                         if (pos <= XScrollOffset - OBJECT_BORDER_X1 || pos >= OBJECT_BORDER_X2 + XScrollOffset) {
@@ -2613,9 +2580,9 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
             case FUNC_SETMUSICTRACK:
                 opcodeSize = 0;
                 if (ScriptEng.operands[2] <= 1)
-                    SetMusicTrack(scriptText, ScriptEng.operands[1], ScriptEng.operands[2], 0);
+                    SetMusicTrack(ScriptText, ScriptEng.operands[1], ScriptEng.operands[2], 0);
                 else
-                    SetMusicTrack(scriptText, ScriptEng.operands[1], true, ScriptEng.operands[2]);
+                    SetMusicTrack(ScriptText, ScriptEng.operands[1], true, ScriptEng.operands[2]);
                 break;
             case FUNC_PLAYMUSIC:
                 opcodeSize = 0;
@@ -3135,8 +3102,8 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                         break;
                     case VAR_SCREENCENTERX: break;
                     case VAR_SCREENCENTERY: break;
-                    case VAR_SCREENXSIZE: break;
-                    case VAR_SCREENYSIZE: break;
+                    case VAR_SCREENSIZEX: break;
+                    case VAR_SCREENSIZEY: break;
                     case VAR_OBJECTOUTOFBOUNDS: break;
                 }
             } else if (opcodeType == SCRIPTVAR_INTCONST) { // int constant

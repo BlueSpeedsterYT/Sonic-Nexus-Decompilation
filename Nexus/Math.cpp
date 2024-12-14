@@ -12,6 +12,8 @@ int CosValue512[512];
 int SinValue256[256];
 int CosValue256[256];
 
+byte ArcTanValue256[0x100 * 0x100];
+
 void CalculateTrigAngles() {
     srand(time(NULL));
 

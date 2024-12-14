@@ -4,6 +4,8 @@ int ObjectLoop    = 0;
 int curObjectType = 0;
 Entity ObjectEntityList[ENTITY_COUNT];
 
+char typeNames[OBJECT_COUNT][0x40];
+
 int OBJECT_BORDER_X1       = 0x80;
 int OBJECT_BORDER_X2       = 0;
 const int OBJECT_BORDER_Y1 = 0x100;

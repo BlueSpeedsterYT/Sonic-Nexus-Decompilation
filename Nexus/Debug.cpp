@@ -34,7 +34,7 @@ void InitSystemMenu() {
         AddTextMenuEntry(&GameMenu[0], " ");
         char Version[0x80];
         StrCopy(Version, Engine.GameWindowText);
-        StrAdd(Version, " Version");
+        StrAdd(Version, " VERSION");
         AddTextMenuEntry(&GameMenu[0], Version);
         AddTextMenuEntry(&GameMenu[0], Engine.GameVersion);
 #ifdef RETRO_DEV_EXTRA
@@ -69,7 +69,7 @@ void InitErrorMessage()
     StopAllSfx();
     ReleaseStageSfx();
     PaletteMode = 0;
-    Engine.GameMode = ENGINE_DEVMENU;
+    Engine.GameMode = ENGINE_SYSMENU;
     ClearGraphicsData();
     LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
     TextMenuSurfaceNo = 0;

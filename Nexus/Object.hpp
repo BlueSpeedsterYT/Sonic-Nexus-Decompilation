@@ -35,6 +35,8 @@ extern int ObjectLoop;
 extern int curObjectType;
 extern Entity ObjectEntityList[ENTITY_COUNT];
 
+extern char typeNames[OBJECT_COUNT][0x40];
+
 extern int OBJECT_BORDER_X1;
 extern int OBJECT_BORDER_X2;
 extern const int OBJECT_BORDER_Y1;

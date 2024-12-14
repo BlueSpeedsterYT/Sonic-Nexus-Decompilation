@@ -12,25 +12,16 @@ void InitSystemMenu() {
     ReleaseStageSfx();
     PaletteMode = 0;
 
-#if !RETRO_USE_ORIGINAL_CODE
     if (Engine.UseBinFile
         || ((Engine.startList_Game != 0xFF && Engine.startList_Game) || (Engine.startStage_Game != 0xFF && Engine.startStage_Game))) {
-#else
-    if (Engine.UseBinFile) {
-#endif
         ClearGraphicsData();
         for (int i = 0; i < PLAYER_COUNT; ++i) PlayerScriptList[i].scriptPath[0] = 0;
         LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
         LoadPlayerFromList(0, 0);
         Engine.GameMode = ENGINE_MAINGAME;
         StageMode       = STAGEMODE_LOAD;
-#if !RETRO_USE_ORIGINAL_CODE
         ActiveStageList   = Engine.startList_Game == 0xFF ? 0 : Engine.startList_Game;
         StageListPosition = Engine.startStage_Game == 0xFF ? 0 : Engine.startStage_Game;
-#else
-        ActiveStageList   = 0;
-        StageListPosition = 0;
-#endif
     } else {
         Engine.GameMode = ENGINE_SYSMENU;
         ClearGraphicsData();
@@ -61,16 +52,12 @@ void InitSystemMenu() {
 }
 void ProcessSystemMenu() {
     ClearScreen(0xF0);
-#if !RETRO_USE_ORIGINAL_CODE
     GKeyDown.start = false;
     GKeyDown.B     = false;
     GKeyDown.up    = false;
     GKeyDown.down  = false;
     CheckKeyDown(&GKeyDown, 0xFF);
     CheckKeyPress(&GKeyPress, 0xFF);
-#else
-    CheckKeyPress(&GKeyPress, 0x83);
-#endif
 
     switch (StageMode) {
         case DEVMENU_MAIN: // Main Menu
@@ -87,11 +74,7 @@ void ProcessSystemMenu() {
                 GameMenu[0].selection2 = (RETRO_USE_MOD_LOADER ? 11 : 9);
 
             DrawTextMenu(&GameMenu[0], SCREEN_CENTERX, 72);
-#if !RETRO_USE_ORIGINAL_CODE
             if (GKeyPress.start || GKeyPress.A) {
-#else
-            if (GKeyPress.start) {
-#endif
                 if (GameMenu[0].selection2 == 7) {
                     SetupTextMenu(&GameMenu[0], 0);
                     AddTextMenuEntry(&GameMenu[0], "CHOOSE A PLAYER");
@@ -132,7 +115,6 @@ void ProcessSystemMenu() {
                     Engine.GameMode = ENGINE_EXITGAME;
                 }
             }
-#if !RETRO_USE_ORIGINAL_CODE
             else if (GKeyPress.B && Engine.UseBinFile) {
                 ClearGraphicsData();
                 ClearAnimationData();
@@ -142,7 +124,6 @@ void ProcessSystemMenu() {
                 Engine.GameMode   = ENGINE_MAINGAME;
                 StageListPosition = 0;
             }
-#endif
             break;
         }
         case DEVMENU_PLAYERSEL: // Selecting Player
@@ -159,11 +140,7 @@ void ProcessSystemMenu() {
 
             DrawTextMenu(&GameMenu[0], SCREEN_CENTERX - 4, 72);
             DrawTextMenu(&GameMenu[1], SCREEN_CENTERX - 40, 96);
-#if !RETRO_USE_ORIGINAL_CODE
             if (GKeyPress.start || GKeyPress.A) {
-#else
-            if (GKeyPress.start) {
-#endif
                 LoadPlayerFromList(GameMenu[1].selection1, 0);
                 SetupTextMenu(&GameMenu[0], 0);
                 AddTextMenuEntry(&GameMenu[0], "SELECT A STAGE LIST");
@@ -180,7 +157,6 @@ void ProcessSystemMenu() {
                 GameMenu[0].selection2 = 3;
                 StageMode              = DEVMENU_STAGELISTSEL;
             }
-#if !RETRO_USE_ORIGINAL_CODE
             else if (GKeyPress.B) {
                 StageMode = DEVMENU_MAIN;
                 SetupTextMenu(&GameMenu[0], 0);
@@ -204,7 +180,6 @@ void ProcessSystemMenu() {
                 GameMenu[0].selection1     = 0;
                 GameMenu[0].selection2     = 7;
             }
-#endif
             break;
         }
         case DEVMENU_STAGELISTSEL: // Selecting Category
@@ -246,11 +221,7 @@ void ProcessSystemMenu() {
                 default: break;
             }
 
-#if !RETRO_USE_ORIGINAL_CODE
             if ((GKeyPress.start || GKeyPress.A) && nextMenu) {
-#else
-            if (GKeyPress.start && nextMenu) {
-#endif
                 SetupTextMenu(&GameMenu[0], 0);
                 AddTextMenuEntry(&GameMenu[0], "SELECT A STAGE");
                 SetupTextMenu(&GameMenu[1], 0);
@@ -263,7 +234,6 @@ void ProcessSystemMenu() {
                 GameMenu[0].selectionCount = 1;
                 StageMode                  = DEVMENU_STAGESEL;
             }
-#if !RETRO_USE_ORIGINAL_CODE
             else if (GKeyPress.B) {
                 SetupTextMenu(&GameMenu[0], 0);
                 AddTextMenuEntry(&GameMenu[0], "CHOOSE A PLAYER");
@@ -275,7 +245,6 @@ void ProcessSystemMenu() {
                 GameMenu[1].selection1     = 0;
                 StageMode                  = DEVMENU_PLAYERSEL;
             }
-#endif
             break;
         }
         case DEVMENU_STAGESEL: // Selecting Stage
@@ -297,7 +266,6 @@ void ProcessSystemMenu() {
                 Engine.GameMode   = ENGINE_MAINGAME;
                 StageListPosition = GameMenu[1].selection1;
             }
-#if !RETRO_USE_ORIGINAL_CODE
             else if (GKeyPress.B) {
                 SetupTextMenu(&GameMenu[0], 0);
                 AddTextMenuEntry(&GameMenu[0], "SELECT A STAGE LIST");
@@ -316,7 +284,6 @@ void ProcessSystemMenu() {
                 GameMenu[0].selectionCount = 2;
                 StageMode                  = DEVMENU_STAGELISTSEL;
             }
-#endif
             break;
         }
 #if RETRO_USE_MOD_LOADER

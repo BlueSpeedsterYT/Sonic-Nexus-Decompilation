@@ -2,17 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 
 project(RetroEngine)
 
+set(DECOMP_VERSION 0.0.1a)
+
 option(FORCE_CASE_INSENSITIVE "Forces case insensivity." OFF)
 option(RETRO_MOD_LOADER "Enables or disables the mod loader." ON)
-option(RETRO_USE_ORIGINAL_CODE "Removes any change that differs from the original code, a playable game can't be built this way." OFF)
 
 set(RETRO_SDL_VERSION 2 CACHE STRING "Select between SDL2 and SDL1, defaults to SDL2")
 
-if(RETRO_ORIGINAL_CODE)
-    set(RETRO_MOD_LOADER OFF)
-endif()
-
-set(RETRO_NAME "Nexus")
+set(RETRO_NAME "Nexus Extended")
 
 set(RETRO_OUTPUT_NAME ${RETRO_NAME} CACHE STRING "The exported name of the executable.")
 
@@ -45,8 +42,6 @@ set(RETRO_FILES
 if(NOT PLATFORM)
     if(WIN32) # THIS ASSUMES VCPKG OR SOURCES !!!!!!!
         set(PLATFORM "Windows" CACHE STRING "The platform to compile for.")
-    elseif(ANDROID)
-        set(PLATFORM "Android" CACHE STRING "The platform to compile for.")
     else()
         set(PLATFORM ${CMAKE_SYSTEM_NAME} CACHE STRING "The platform to compile for.")
     endif()
@@ -128,5 +123,7 @@ endif()
 target_compile_definitions(RetroEngine PRIVATE
     RETRO_USE_MOD_LOADER=$<BOOL:${RETRO_USE_MOD_LOADER}>
     FORCE_CASE_INSENSITIVE=$<BOOL:${FORCE_CASE_INSENSITIVE}>
-    RETRO_USE_ORIGINAL_CODE=$<BOOL:${RETRO_USE_ORIGINAL_CODE}>
+	
+    RETRO_DEV_EXTRA="${PLATFORM} - ${CMAKE_CXX_COMPILER_ID}"
+    DECOMP_VERSION="${DECOMP_VERSION}"
 )

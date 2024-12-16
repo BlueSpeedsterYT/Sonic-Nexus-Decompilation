@@ -20,6 +20,7 @@ struct GFXSurface {
     char fileName[0x40];
     int height;
     int width;
+    int widthShifted;
     int dataPosition;
 };
 

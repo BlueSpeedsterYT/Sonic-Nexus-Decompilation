@@ -28,13 +28,15 @@ void InitSystemMenu() {
         LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
         TextMenuSurfaceNo = 0;
         LoadGIFFile("Data/Game/SystemText.gif", 0);
+        SetPaletteEntry(0xF0, 0x00, 0x00, 0x00);
+        SetPaletteEntry(0xFF, 0xFF, 0xFF, 0xFF);
         StageMode = DEVMENU_MAIN;
         SetupTextMenu(&GameMenu[0], 0);
         AddTextMenuEntry(&GameMenu[0], "RETRO SONIC DEFAULT MENU");
         AddTextMenuEntry(&GameMenu[0], " ");
         char Version[0x80];
         StrCopy(Version, Engine.GameWindowText);
-        StrAdd(Version, " VERSION");
+        StrAdd(Version, " Version");
         AddTextMenuEntry(&GameMenu[0], Version);
         AddTextMenuEntry(&GameMenu[0], Engine.GameVersion);
 #ifdef RETRO_DEV_EXTRA
@@ -74,6 +76,8 @@ void InitErrorMessage()
     LoadPalette("Data/Palettes/MasterPalette.act", 0, 256);
     TextMenuSurfaceNo = 0;
     LoadGIFFile("Data/Game/SystemText.gif", 0);
+    SetPaletteEntry(0xF0, 0x00, 0x00, 0x00);
+    SetPaletteEntry(0xFF, 0xFF, 0xFF, 0xFF);
     StageMode = DEVMENU_SCRIPTERROR;
     GameMenu[0].alignment        = MENU_ALIGN_CENTER;
     GameMenu[0].selectionCount   = 1;

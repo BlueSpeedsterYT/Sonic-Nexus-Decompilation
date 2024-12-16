@@ -345,6 +345,12 @@ int LoadGIFFile(const char *filePath, byte sheetID) {
         }
 
         surface->dataPosition = GfxDataPosition;
+        surface->widthShifted = 0;
+        int w                 = surface->width;
+        while (w > 1) {
+            w >>= 1;
+            ++surface->widthShifted;
+        }
 
         GfxDataPosition += surface->width * surface->height;
         if (GfxDataPosition < GFXDATA_MAX) {

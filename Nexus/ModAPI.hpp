@@ -31,4 +31,6 @@ void RefreshEngine();
 
 #endif
 
+int GetSceneID(byte listID, const char *sceneName);
+
 #endif

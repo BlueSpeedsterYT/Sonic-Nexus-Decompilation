@@ -23,13 +23,30 @@ struct TextMenu {
     sbyte selection2;
 };
 
+struct FontCharacter {
+    int id;
+    short srcX;
+    short srcY;
+    short width;
+    short height;
+    short pivotX;
+    short pivotY;
+    short xAdvance;
+};
+
 extern TextMenu GameMenu[TEXTMENU_COUNT];
 extern int TextMenuSurfaceNo;
 
+extern FontCharacter FontCharacterList[FONTCHAR_COUNT];
+
+void LoadFontFile(const char *filePath);
+void LoadTextFile(TextMenu *menu, const char *filePath, byte mapCode);
 void LoadConfigListText(TextMenu *menu, int listNo);
 
 void SetupTextMenu(TextMenu *menu, int rowCount);
 void AddTextMenuEntry(TextMenu *menu, const char *text);
+void AddTextMenuEntryMapped(TextMenu *menu, const char *text);
+void SetTextMenuEntry(TextMenu *menu, const char *text, int rowID);
 void EditTextMenuEntry(TextMenu *menu, const char *text, int rowID);
 
 #endif // !TEXTSYSTEM_H

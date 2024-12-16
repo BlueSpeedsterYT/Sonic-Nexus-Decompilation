@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(RetroEngine)
 
-set(DECOMP_VERSION 0.0.1A)
+set(DECOMP_VERSION 0.0.1a)
 
 option(FORCE_CASE_INSENSITIVE "Forces case insensivity." OFF)
 option(RETRO_MOD_LOADER "Enables or disables the mod loader." ON)

@@ -2007,6 +2007,7 @@ void DrawRotatedSprite(int direction, int XPos, int YPos, int pivotX, int pivotY
 
     GFXSurface *surface  = &GfxSurface[sheetID];
     int pitch            = SCREEN_XSIZE - maxX;
+    int lineSize         = surface->widthShifted;
     byte *pixelBufferPtr = &Engine.FrameBuffer[left + SCREEN_XSIZE * top];
     int startX           = left - XPos;
     int startY           = top - YPos;
@@ -2027,7 +2028,7 @@ void DrawRotatedSprite(int direction, int XPos, int YPos, int pivotX, int pivotY
             int w      = maxX;
             while (w--) {
                 if (finalX > shiftPivot && finalX < fullwidth && finalY > shiftheight && finalY < fullheight) {
-                    byte index = gfxData[((finalY >> 9) * surface->width) + (finalX >> 9)];
+                    byte index = gfxData[(finalY >> 9 << lineSize) + (finalX >> 9)];
                     if (index > 0)
                         *pixelBufferPtr = index;
                 }
@@ -2048,7 +2049,7 @@ void DrawRotatedSprite(int direction, int XPos, int YPos, int pivotX, int pivotY
             int w      = maxX;
             while (w--) {
                 if (finalX > shiftPivot && finalX < fullwidth && finalY > shiftheight && finalY < fullheight) {
-                    byte index = gfxData[((finalY >> 9) * surface->width) + (finalX >> 9)];
+                    byte index = gfxData[(finalY >> 9 << lineSize) + (finalX >> 9)];
                     if (index > 0)
                         *pixelBufferPtr = index;
                 }
@@ -2099,33 +2100,57 @@ void DrawBlendedSprite(int XPos, int YPos, int width, int height, int sprX, int 
     }
 }
 
+void DrawBitmapText(void *menu, int XPos, int YPos, int scale, int spacing, int rowStart, int rowCount) {
+    TextMenu *tMenu = (TextMenu *)menu;
+    int Y           = YPos << 9;
+    if (rowCount < 0)
+        rowCount = tMenu->rowCount;
+    if (rowStart + rowCount > tMenu->rowCount)
+        rowCount = tMenu->rowCount - rowStart;
+
+    while (rowCount > 0) {
+        int X = XPos << 9;
+        for (int i = 0; i < tMenu->entrySize[rowStart]; ++i) {
+            ushort c             = tMenu->textData[tMenu->entryStart[rowStart] + i];
+            FontCharacter *fChar = &FontCharacterList[c];
+            DrawScaledSprite(FLIP_NONE, X >> 9, Y >> 9, -fChar->pivotX, -fChar->pivotY, scale, scale, fChar->width, fChar->height, fChar->srcX,
+                             fChar->srcY, TextMenuSurfaceNo);
+            X += fChar->xAdvance * scale;
+        }
+        Y += spacing * scale;
+        rowStart++;
+        rowCount--;
+    }
+}
+
 void DrawTextMenuEntry(void *menu, int rowID, int XPos, int YPos, int textHighlight) {
     TextMenu *tMenu = (TextMenu *)menu;
     int id          = tMenu->entryStart[rowID];
     for (int i = 0; i < tMenu->entrySize[rowID]; ++i) {
-        if (tMenu->textData[id] > 0)
-            DrawSprite(XPos + 8 * i, YPos, 8, 8, textHighlight, 8 * tMenu->textData[id] - 8, TextMenuSurfaceNo);
-        ++id;
+        DrawSprite(XPos + (i << 3), YPos, 8, 8, ((tMenu->textData[id] & 0xF) << 3), ((tMenu->textData[id] >> 4) << 3) + textHighlight,
+                   TextMenuSurfaceNo);
+        id++;
     }
 }
 void DrawBlendedTextMenuEntry(void *menu, int rowID, int XPos, int YPos, int textHighlight) {
     TextMenu *tMenu = (TextMenu *)menu;
     int id          = tMenu->entryStart[rowID];
     for (int i = 0; i < tMenu->entrySize[rowID]; ++i) {
-        if (tMenu->textData[id] > 0)
-            DrawBlendedSprite(XPos + 8 * i, YPos, 8, 8, textHighlight, 8 * tMenu->textData[id] - 8, TextMenuSurfaceNo);
-        ++id;
+        DrawBlendedSprite(XPos + (i << 3), YPos, 8, 8, ((tMenu->textData[id] & 0xF) << 3), ((tMenu->textData[id] >> 4) << 3) + textHighlight,
+                          TextMenuSurfaceNo);
+        id++;
     }
 }
 void DrawStageTextEntry(void *menu, int rowID, int XPos, int YPos, int textHighlight) {
     TextMenu *tMenu = (TextMenu *)menu;
     int id          = tMenu->entryStart[rowID];
     for (int i = 0; i < tMenu->entrySize[rowID]; ++i) {
-        if (tMenu->textData[id] > 0) {
-            if (i == tMenu->entrySize[rowID] - 1)
-                DrawSprite(XPos + 8 * i, YPos, 8, 8, 0, 8 * tMenu->textData[id] - 8, TextMenuSurfaceNo);
-            else
-                DrawSprite(XPos + 8 * i, YPos, 8, 8, textHighlight, 8 * tMenu->textData[id] - 8, TextMenuSurfaceNo);
+        if (i == tMenu->entrySize[rowID] - 1) {
+            DrawSprite(XPos + (i << 3), YPos, 8, 8, ((tMenu->textData[id] & 0xF) << 3), ((tMenu->textData[id] >> 4) << 3), TextMenuSurfaceNo);
+        }
+        else {
+            DrawSprite(XPos + (i << 3), YPos, 8, 8, ((tMenu->textData[id] & 0xF) << 3), ((tMenu->textData[id] >> 4) << 3) + textHighlight,
+                       TextMenuSurfaceNo);
         }
         id++;
     }
@@ -2146,23 +2171,23 @@ void DrawTextMenu(void *menu, int XPos, int YPos) {
                 switch (tMenu->selectionCount) {
                     case 1:
                         if (i == tMenu->selection1)
-                            DrawTextMenuEntry(tMenu, i, XPos, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, XPos, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, XPos, YPos, 0);
                         break;
                     case 2:
                         if (i == tMenu->selection1 || i == tMenu->selection2)
-                            DrawTextMenuEntry(tMenu, i, XPos, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, XPos, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, XPos, YPos, 0);
                         break;
                     case 3:
                         if (i == tMenu->selection1)
-                            DrawTextMenuEntry(tMenu, i, XPos, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, XPos, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, XPos, YPos, 0);
                         if (i == tMenu->selection2 && i != tMenu->selection1)
-                            DrawStageTextEntry(tMenu, i, XPos, YPos, 8);
+                            DrawStageTextEntry(tMenu, i, XPos, YPos, 128);
                         break;
                 }
                 YPos += 8;
@@ -2174,23 +2199,23 @@ void DrawTextMenu(void *menu, int XPos, int YPos) {
                 switch (tMenu->selectionCount) {
                     case 1:
                         if (i == tMenu->selection1)
-                            DrawTextMenuEntry(tMenu, i, textX, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, textX, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, textX, YPos, 0);
                         break;
                     case 2:
                         if (i == tMenu->selection1 || i == tMenu->selection2)
-                            DrawTextMenuEntry(tMenu, i, textX, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, textX, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, textX, YPos, 0);
                         break;
                     case 3:
                         if (i == tMenu->selection1)
-                            DrawTextMenuEntry(tMenu, i, textX, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, textX, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, textX, YPos, 0);
                         if (i == tMenu->selection2 && i != tMenu->selection1)
-                            DrawStageTextEntry(tMenu, i, textX, YPos, 8);
+                            DrawStageTextEntry(tMenu, i, textX, YPos, 128);
                         break;
                 }
                 YPos += 8;
@@ -2202,13 +2227,13 @@ void DrawTextMenu(void *menu, int XPos, int YPos) {
                 switch (tMenu->selectionCount) {
                     case 1:
                         if (i == tMenu->selection1)
-                            DrawTextMenuEntry(tMenu, i, textX, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, textX, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, textX, YPos, 0);
                         break;
                     case 2:
                         if (i == tMenu->selection1 || i == tMenu->selection2)
-                            DrawTextMenuEntry(tMenu, i, textX, YPos, 8);
+                            DrawTextMenuEntry(tMenu, i, textX, YPos, 128);
                         else
                             DrawTextMenuEntry(tMenu, i, textX, YPos, 0);
                         break;
@@ -2219,7 +2244,7 @@ void DrawTextMenu(void *menu, int XPos, int YPos) {
                             DrawTextMenuEntry(tMenu, i, textX, YPos, 0);
 
                         if (i == tMenu->selection2 && i != tMenu->selection1)
-                            DrawStageTextEntry(tMenu, i, textX, YPos, 8);
+                            DrawStageTextEntry(tMenu, i, textX, YPos, 128);
                         break;
                 }
                 YPos += 8;

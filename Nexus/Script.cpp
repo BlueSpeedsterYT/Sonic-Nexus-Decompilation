@@ -865,6 +865,32 @@ void ConvertFunctionText(char *text) {
                     }
                 }
             }
+            // Eg: TempValue0 = StageName[R - PALMTREE PANIC ZONE 1 A]
+            if (StrComp(funcName, "StageName")) {
+                funcName[0] = '0';
+                funcName[1] = 0;
+
+                int s       = -1;
+                if (StrLength(strBuffer) >= 2) {
+                    char list = strBuffer[0];
+                    switch (list) {
+                        case 'P': list = STAGELIST_PRESENTATION; break;
+                        case 'R': list = STAGELIST_REGULAR; break;
+                        case 'S': list = STAGELIST_SPECIAL; break;
+                        case 'B': list = STAGELIST_BONUS; break;
+                    }
+                    s = GetSceneID(list, &strBuffer[2]);
+                }
+
+                if (s == -1) {
+                    char buf[0x40];
+                    sprintf(buf, "WARNING: Unknown StageName \"%s\", on line %d", strBuffer, lineID);
+                    PrintLog(buf);
+                    s = 0;
+                }
+                funcName[0] = 0;
+                AppendIntegerToString(funcName, s);
+            }
             if (ConvertStringToInteger(funcName, &value)) {
                 ScriptData[ScriptDataPos++] = SCRIPTVAR_INTCONST;
                 ScriptData[ScriptDataPos++] = value;
@@ -1349,8 +1375,7 @@ void ParseScriptFile(char *scriptName, int scriptID) {
                                     AddTextMenuEntry(&GameMenu[0], scriptName);
                                     parseMode = PARSEMODE_ERROR;
                                 }
-
-                                if (!ScriptText[0]) {
+                                else if (!ScriptText[0]) {
                                     parseMode = PARSEMODE_SCOPELESS;
                                     switch (currentSub) {
                                         case SUB_MAIN: ScriptData[ObjectScriptList[scriptID].subMain.scriptCodePtr] = FUNC_END; break;
@@ -2504,6 +2529,19 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                 newEnt->values[5]     = 0;
                 newEnt->values[6]     = 0;
                 newEnt->values[7]     = 0;
+                newEnt->values[8]     = 0;
+                newEnt->values[9]     = 0;
+                newEnt->values[10]     = 0;
+                newEnt->values[11]     = 0;
+                newEnt->values[12]     = 0;
+                newEnt->values[13]     = 0;
+                newEnt->values[14]     = 0;
+                newEnt->values[15]     = 0;
+                newEnt->values[16]     = 0;
+                newEnt->values[17]     = 0;
+                newEnt->values[18]     = 0;
+                newEnt->values[19]     = 0;
+                newEnt->values[20]     = 0;
                 break;
             }
             case FUNC_PLAYEROBJECTCOLLISION:
@@ -2551,6 +2589,19 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                 temp->values[5]     = 0;
                 temp->values[6]     = 0;
                 temp->values[7]     = 0;
+                temp->values[8]     = 0;
+                temp->values[9]     = 0;
+                temp->values[10]     = 0;
+                temp->values[11]     = 0;
+                temp->values[12]     = 0;
+                temp->values[13]     = 0;
+                temp->values[14]     = 0;
+                temp->values[15]     = 0;
+                temp->values[16]     = 0;
+                temp->values[17]     = 0;
+                temp->values[18]     = 0;
+                temp->values[19]     = 0;
+                temp->values[20]     = 0;
                 break;
             }
             case FUNC_DEFAULTGROUNDMOVEMENT:
@@ -2606,13 +2657,23 @@ void ProcessScript(int scriptCodePtr, int jumpTablePtr, byte scriptSub) {
                 break;
             case FUNC_OBJECTTILECOLLISION:
                 opcodeSize = 0;
-                if (ScriptEng.operands[0] == CSIDE_FLOOR)
-                    ObjectFloorCollision(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]);
+                switch (ScriptEng.operands[0]) {
+                    default: break;
+                    case CSIDE_FLOOR: ObjectFloorCollision(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                    case CSIDE_LWALL: ObjectLWallCollision(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                    case CSIDE_RWALL: ObjectRWallCollision(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                    case CSIDE_ROOF: ObjectRoofCollision(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                }
                 break;
             case FUNC_OBJECTTILEGRIP:
                 opcodeSize = 0;
-                if (ScriptEng.operands[0] == CSIDE_FLOOR)
-                    ObjectFloorGrip(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]);
+                switch (ScriptEng.operands[0]) {
+                    default: break;
+                    case CSIDE_FLOOR: ObjectFloorGrip(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                    case CSIDE_LWALL: ObjectLWallGrip(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                    case CSIDE_RWALL: ObjectRWallGrip(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                    case CSIDE_ROOF: ObjectRoofGrip(ScriptEng.operands[1], ScriptEng.operands[2], ScriptEng.operands[3]); break;
+                }
                 break;
             case FUNC_LOADVIDEO:
                 opcodeSize = 0;

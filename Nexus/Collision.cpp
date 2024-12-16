@@ -1379,6 +1379,186 @@ void ObjectFloorCollision(int xOffset, int yOffset, int cPath) {
     }
 }
 
+void ObjectLWallCollision(int xOffset, int yOffset, int cPath) {
+    int c;
+    ScriptEng.checkResult = false;
+    Entity *entity        = &ObjectEntityList[ObjectLoop];
+    int XPos              = (entity->XPos >> 16) + xOffset;
+    int YPos              = (entity->YPos >> 16) + yOffset;
+    if (XPos > 0 && XPos < StageLayouts[0].xsize << 7 && YPos > 0 && YPos < StageLayouts[0].ysize << 7) {
+        int chunkX    = XPos >> 7;
+        int tileX     = (XPos & 0x7F) >> 4;
+        int chunkY    = YPos >> 7;
+        int tileY     = (YPos & 0x7F) >> 4;
+        int chunk     = StageLayouts[0].tiles[chunkX + (chunkY << 8)] << 6;
+        chunk         = chunk + tileX + (tileY << 3);
+        int tileIndex = StageTiles.tileIndex[chunk];
+        if (StageTiles.collisionFlags[cPath][chunk] != SOLID_TOP && StageTiles.collisionFlags[cPath][chunk] < SOLID_NONE) {
+            switch (StageTiles.direction[chunk]) {
+                case 0: {
+                    c = (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) <= TileCollisions[cPath].lWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 1: {
+                    c = (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) <= 15 - TileCollisions[cPath].rWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = 15 - TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 2: {
+                    c = 15 - (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) <= TileCollisions[cPath].lWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 3: {
+                    c = 15 - (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) <= 15 - TileCollisions[cPath].rWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = 15 - TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+            }
+        }
+        if (ScriptEng.checkResult) {
+            entity->XPos = (XPos - xOffset) << 16;
+        }
+    }
+}
+
+void ObjectRoofCollision(int xOffset, int yOffset, int cPath) {
+    int c;
+    ScriptEng.checkResult = false;
+    Entity *entity        = &ObjectEntityList[ObjectLoop];
+    int XPos              = (entity->XPos >> 16) + xOffset;
+    int YPos              = (entity->YPos >> 16) + yOffset;
+    if (XPos > 0 && XPos < StageLayouts[0].xsize << 7 && YPos > 0 && YPos < StageLayouts[0].ysize << 7) {
+        int chunkX    = XPos >> 7;
+        int tileX     = (XPos & 0x7F) >> 4;
+        int chunkY    = YPos >> 7;
+        int tileY     = (YPos & 0x7F) >> 4;
+        int chunk     = StageLayouts[0].tiles[chunkX + (chunkY << 8)] << 6;
+        chunk         = chunk + tileX + (tileY << 3);
+        int tileIndex = StageTiles.tileIndex[chunk];
+        if (StageTiles.collisionFlags[cPath][chunk] != SOLID_TOP && StageTiles.collisionFlags[cPath][chunk] < SOLID_NONE) {
+            switch (StageTiles.direction[chunk]) {
+                case 0: {
+                    c = (XPos & 15) + (tileIndex << 4);
+                    if ((YPos & 15) >= TileCollisions[cPath].roofMasks[c]) {
+                        break;
+                    }
+                    YPos                  = TileCollisions[cPath].roofMasks[c] + (chunkY << 7) + (tileY << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 1: {
+                    c = 15 - (XPos & 15) + (tileIndex << 4);
+                    if ((YPos & 15) >= TileCollisions[cPath].roofMasks[c]) {
+                        break;
+                    }
+                    YPos                  = TileCollisions[cPath].roofMasks[c] + (chunkY << 7) + (tileY << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 2: {
+                    c = (XPos & 15) + (tileIndex << 4);
+                    if ((YPos & 15) >= 15 - TileCollisions[cPath].floorMasks[c]) {
+                        break;
+                    }
+                    YPos                  = 15 - TileCollisions[cPath].floorMasks[c] + (chunkY << 7) + (tileY << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 3: {
+                    c = 15 - (XPos & 15) + (tileIndex << 4);
+                    if ((YPos & 15) >= 15 - TileCollisions[cPath].floorMasks[c]) {
+                        break;
+                    }
+                    YPos                  = 15 - TileCollisions[cPath].floorMasks[c] + (chunkY << 7) + (tileY << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+            }
+        }
+        if (ScriptEng.checkResult) {
+            entity->YPos = (YPos - yOffset) << 16;
+        }
+    }
+}
+
+void ObjectRWallCollision(int xOffset, int yOffset, int cPath) {
+    int c;
+    ScriptEng.checkResult = false;
+    Entity *entity        = &ObjectEntityList[ObjectLoop];
+    int XPos              = (entity->XPos >> 16) + xOffset;
+    int YPos              = (entity->YPos >> 16) + yOffset;
+    if (XPos > 0 && XPos < StageLayouts[0].xsize << 7 && YPos > 0 && YPos < StageLayouts[0].ysize << 7) {
+        int chunkX    = XPos >> 7;
+        int tileX     = (XPos & 0x7F) >> 4;
+        int chunkY    = YPos >> 7;
+        int tileY     = (YPos & 0x7F) >> 4;
+        int chunk     = StageLayouts[0].tiles[chunkX + (chunkY << 8)] << 6;
+        chunk         = chunk + tileX + (tileY << 3);
+        int tileIndex = StageTiles.tileIndex[chunk];
+        if (StageTiles.collisionFlags[cPath][chunk] != SOLID_TOP && StageTiles.collisionFlags[cPath][chunk] < SOLID_NONE) {
+            switch (StageTiles.direction[chunk]) {
+                case 0: {
+                    c = (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) >= TileCollisions[cPath].rWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 1: {
+                    c = (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) >= 15 - TileCollisions[cPath].lWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = 15 - TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 2: {
+                    c = 15 - (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) >= TileCollisions[cPath].rWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+                case 3: {
+                    c = 15 - (YPos & 15) + (tileIndex << 4);
+                    if ((XPos & 15) >= 15 - TileCollisions[cPath].lWallMasks[c]) {
+                        break;
+                    }
+                    XPos                  = 15 - TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                    ScriptEng.checkResult = true;
+                    break;
+                }
+            }
+        }
+        if (ScriptEng.checkResult) {
+            entity->XPos = (XPos - xOffset) << 16;
+        }
+    }
+}
+
 void ObjectFloorGrip(int xOffset, int yOffset, int cPath) {
     int c;
     ScriptEng.checkResult = false;
@@ -1445,6 +1625,215 @@ void ObjectFloorGrip(int xOffset, int yOffset, int cPath) {
         }
         entity->YPos          = (chunkX - yOffset) << 16;
         ScriptEng.checkResult = false;
+    }
+}
+
+void ObjectLWallGrip(int xOffset, int yOffset, int cPath) {
+    int c;
+    ScriptEng.checkResult = false;
+    Entity *entity        = &ObjectEntityList[ObjectLoop];
+    int XPos              = (entity->XPos >> 16) + xOffset;
+    int YPos              = (entity->YPos >> 16) + yOffset;
+    int startX            = XPos;
+    XPos                  = XPos - 16;
+    int chunk             = xOffset;
+    for (int i = 3; i > 0; i--) {
+        if (XPos > 0 && XPos < StageLayouts[0].xsize << 7 && YPos > 0 && YPos < StageLayouts[0].ysize << 7 && !ScriptEng.checkResult) {
+            int chunkX    = XPos >> 7;
+            int tileX     = (XPos & 0x7F) >> 4;
+            int chunkY    = YPos >> 7;
+            int tileY     = (YPos & 0x7F) >> 4;
+            chunk         = (StageLayouts[0].tiles[chunkX + (chunkY << 8)] << 6) + tileX + (tileY << 3);
+            int tileIndex = StageTiles.tileIndex[chunk];
+            if (StageTiles.collisionFlags[cPath][chunk] < SOLID_NONE) {
+                switch (StageTiles.direction[chunk]) {
+                    case 0: {
+                        c = (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].lWallMasks[c] >= 64) {
+                            break;
+                        }
+                        entity->XPos          = TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 1: {
+                        c = (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].rWallMasks[c] <= -64) {
+                            break;
+                        }
+                        entity->XPos          = 15 - TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 2: {
+                        c = 15 - (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].lWallMasks[c] >= 64) {
+                            break;
+                        }
+                        entity->XPos          = TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 3: {
+                        c = 15 - (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].rWallMasks[c] <= -64) {
+                            break;
+                        }
+                        entity->XPos          = 15 - TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                }
+            }
+        }
+        XPos += 16;
+    }
+    if (ScriptEng.checkResult) {
+        if (abs(entity->XPos - startX) < 16) {
+            entity->XPos = (entity->XPos - xOffset) << 16;
+            return;
+        }
+        entity->XPos          = (startX - xOffset) << 16;
+        ScriptEng.checkResult = StageTiles.collisionFlags[cPath][chunk] == 1;
+    }
+}
+
+void ObjectRoofGrip(int xOffset, int yOffset, int cPath) {
+    int c;
+    ScriptEng.checkResult = false;
+    Entity *entity        = &ObjectEntityList[ObjectLoop];
+    int XPos              = (entity->XPos >> 16) + xOffset;
+    int YPos              = (entity->YPos >> 16) + yOffset;
+    int startY            = YPos;
+    YPos                  = YPos + 16;
+    for (int i = 3; i > 0; i--) {
+        if (XPos > 0 && XPos < StageLayouts[0].xsize << 7 && YPos > 0 && YPos < StageLayouts[0].ysize << 7 && !ScriptEng.checkResult) {
+            int chunkX    = XPos >> 7;
+            int tileX     = (XPos & 0x7F) >> 4;
+            int chunkY    = YPos >> 7;
+            int tileY     = (YPos & 0x7F) >> 4;
+            int chunk     = (StageLayouts[0].tiles[chunkX + (chunkY << 8)] << 6) + tileX + (tileY << 3);
+            int tileIndex = StageTiles.tileIndex[chunk];
+            if (StageTiles.collisionFlags[cPath][chunk] < SOLID_NONE) {
+                switch (StageTiles.direction[chunk]) {
+                    case 0: {
+                        c = (XPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].roofMasks[c] <= -64) {
+                            break;
+                        }
+                        entity->YPos          = TileCollisions[cPath].roofMasks[c] + (chunkY << 7) + (tileY << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 1: {
+                        c = 15 - (XPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].roofMasks[c] <= -64) {
+                            break;
+                        }
+                        entity->YPos          = TileCollisions[cPath].roofMasks[c] + (chunkY << 7) + (tileY << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 2: {
+                        c = (XPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].floorMasks[c] >= 64) {
+                            break;
+                        }
+                        entity->YPos          = 15 - TileCollisions[cPath].floorMasks[c] + (chunkY << 7) + (tileY << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 3: {
+                        c = 15 - (XPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].floorMasks[c] >= 64) {
+                            break;
+                        }
+                        entity->YPos          = 15 - TileCollisions[cPath].floorMasks[c] + (chunkY << 7) + (tileY << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                }
+            }
+        }
+        YPos -= 16;
+    }
+    if (ScriptEng.checkResult) {
+        if (abs(entity->YPos - startY) < 16) {
+            entity->YPos = (entity->YPos - yOffset) << 16;
+            return;
+        }
+        entity->YPos          = (startY - yOffset) << 16;
+        ScriptEng.checkResult = false;
+    }
+}
+
+void ObjectRWallGrip(int xOffset, int yOffset, int cPath) {
+    int c;
+    ScriptEng.checkResult = false;
+    Entity *entity        = &ObjectEntityList[ObjectLoop];
+    int XPos              = (entity->XPos >> 16) + xOffset;
+    int YPos              = (entity->YPos >> 16) + yOffset;
+    int startX            = XPos;
+    XPos                  = XPos + 16;
+    int chunk             = xOffset;
+    for (int i = 3; i > 0; i--) {
+        if (XPos > 0 && XPos < StageLayouts[0].xsize << 7 && YPos > 0 && YPos < StageLayouts[0].ysize << 7 && !ScriptEng.checkResult) {
+            int chunkX    = XPos >> 7;
+            int tileX     = (XPos & 0x7F) >> 4;
+            int chunkY    = YPos >> 7;
+            int tileY     = (YPos & 0x7F) >> 4;
+            chunk         = (StageLayouts[0].tiles[chunkX + (chunkY << 8)] << 6) + tileX + (tileY << 3);
+            int tileIndex = StageTiles.tileIndex[chunk];
+            if (StageTiles.collisionFlags[cPath][chunk] < SOLID_NONE) {
+                switch (StageTiles.direction[chunk]) {
+                    case 0: {
+                        c = (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].rWallMasks[c] <= -64) {
+                            break;
+                        }
+                        entity->XPos          = TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 1: {
+                        c = (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].lWallMasks[c] >= 64) {
+                            break;
+                        }
+                        entity->XPos          = 15 - TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 2: {
+                        c = 15 - (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].rWallMasks[c] <= -64) {
+                            break;
+                        }
+                        entity->XPos          = TileCollisions[cPath].rWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                    case 3: {
+                        c = 15 - (YPos & 15) + (tileIndex << 4);
+                        if (TileCollisions[cPath].lWallMasks[c] >= 64) {
+                            break;
+                        }
+                        entity->XPos          = 15 - TileCollisions[cPath].lWallMasks[c] + (chunkX << 7) + (tileX << 4);
+                        ScriptEng.checkResult = true;
+                        break;
+                    }
+                }
+            }
+        }
+        XPos -= 16;
+    }
+    if (ScriptEng.checkResult) {
+        if (abs(entity->XPos - startX) < 16) {
+            entity->XPos = (entity->XPos - xOffset) << 16;
+            return;
+        }
+        entity->XPos          = (startX - xOffset) << 16;
+        ScriptEng.checkResult = StageTiles.collisionFlags[cPath][chunk] == 1;
     }
 }
 

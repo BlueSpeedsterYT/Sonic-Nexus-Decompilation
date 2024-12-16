@@ -311,7 +311,7 @@ bool RetroEngine::LoadGameConfig(const char *filePath) {
     char data[0x40];
     char strBuf[0x80];
     byte strLen = 0;
-    StrCopy(GameWindowText, "Retro-Sonic Engine V2"); // this is the default window name
+    StrCopy(GameWindowText, "Retro-Sonic Engine"); // this is the default window name
 
     if (LoadFile(filePath, &info)) {
         FileRead(&fileBuffer, 1);
